@@ -1,0 +1,13 @@
+# Keep the build context small: everything listed here is NOT sent to the Docker
+# daemon before the build starts. Less data transferred = faster builds, and
+# build output from the host can never leak into the image by accident.
+
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+docs/
+*.log
+README.md

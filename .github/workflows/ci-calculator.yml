@@ -1,5 +1,6 @@
 # ============================================================
 # Lab 5 - Continuous Integration pipeline for the calculator
+# Lab 6 - extended with a Docker build / run / publish job
 # Triggered on every push to main and every pull request to main
 # ============================================================
 name: CI Calculator
@@ -11,7 +12,13 @@ on:
   pull_request:
     branches: [ main ]          # run when a PR targets main
 
-# --- One job, executed on a JDK matrix (Lab5 bonus task) ---
+# --- Least privilege for the automatic GITHUB_TOKEN ---------
+# The test job only reads the code; the docker job additionally needs to write a
+# package to GitHub Container Registry (ghcr.io).
+permissions:
+  contents: read
+
+# --- Job 1: compile and test on a JDK matrix (Lab 5) --------
 jobs:
   build:
     name: Build and test (JDK ${{ matrix.java }})
@@ -50,3 +57,75 @@ jobs:
       # 5. Run all JUnit 5 test cases written in Lab 4
       - name: Run JUnit 5 tests
         run: mvn test
+
+  # --- Job 2: Docker image (Lab 6) --------------------------
+  # This job only starts when job 1 has succeeded on BOTH JDK versions, so an
+  # image can never be published from a commit whose tests fail.
+  docker:
+    name: Build, test and publish Docker image
+    runs-on: ubuntu-latest       # the ubuntu runner ships with Docker preinstalled
+    needs: build
+
+    permissions:
+      contents: read
+      packages: write            # required to push to ghcr.io
+
+    steps:
+      # 1. Get the source code, including the Dockerfile
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Build the image from the multi-stage Dockerfile.
+      #    Compilation and the JUnit suite run inside the builder stage, so this
+      #    step fails if the code does not build or if a test fails.
+      - name: Build Docker image
+        run: docker build -t calculator:lab6 .
+
+      # 3. Prove the image exists and show its size.
+      - name: List Docker images
+        run: docker images
+
+      # 4. Smoke test: run the packaged calculator inside the container.
+      #    Each run uses --rm so no stopped container is left behind.
+      - name: Run calculator inside the container
+        run: |
+          docker run --rm calculator:lab6 2 + 3
+          docker run --rm calculator:lab6 10 - 4
+          docker run --rm calculator:lab6 6 '*' 7
+          docker run --rm calculator:lab6 10 / 4
+          docker run --rm calculator:lab6
+
+      # 5. Division by zero must be reported as an error, not as Infinity/NaN.
+      #    The '*' above is quoted so the shell cannot expand it to file names.
+      #    Main prints "Error: Division by zero" and returns normally, so the
+      #    check is on the output text, not on the exit code.
+      - name: Division by zero must be reported
+        run: |
+          out=$(docker run --rm calculator:lab6 10 / 0)
+          echo "$out"
+          echo "$out" | grep -q "Error" || { echo "::error::no error message printed"; exit 1; }
+          if echo "$out" | grep -Eq "Infinity|NaN"; then
+            echo "::error::division by zero returned Infinity/NaN"
+            exit 1
+          fi
+          echo "OK: the container reported the error instead of returning Infinity"
+
+      # 6. Publish the image to GitHub Container Registry (Docker Hub was not
+      #    reachable from the author's network, ghcr.io is the OCI-compatible
+      #    equivalent and needs no extra account).
+      #    Only on a push to main: pull requests must never publish anything.
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:lab6
+          docker tag calculator:lab6 "$IMAGE"
+          docker push "$IMAGE"
+          echo "Published: $IMAGE"
