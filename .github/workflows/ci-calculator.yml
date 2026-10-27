@@ -125,7 +125,9 @@ jobs:
       - name: Tag and push image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}:lab6
+          # A package name that is already taken by another repository is rejected
+          # by the registry with a bare "denied", so the image gets its own name.
+          IMAGE=ghcr.io/${{ github.repository }}-image:lab6
           docker tag calculator:lab6 "$IMAGE"
           docker push "$IMAGE"
           echo "Published: $IMAGE"
