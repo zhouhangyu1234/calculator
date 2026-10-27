@@ -11,3 +11,6 @@ target/
 
 # Logs
 *.log
+
+# lab report (kept local, contains personal placeholders)
+docs/reports/
