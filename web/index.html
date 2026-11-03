@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator &middot; Lab 7</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="card">
+    <header class="card__head">
+        <div>
+            <h1>Calculator</h1>
+            <p class="subtitle">Lab 7 &middot; web container (nginx) &rarr; backend container (Java API)</p>
+        </div>
+        <div id="status" class="status status--pending" title="GET /health via nginx">
+            <span class="status__dot"></span><span id="status-text">checking backend&hellip;</span>
+        </div>
+    </header>
+
+    <section class="screen" aria-live="polite">
+        <div id="expression" class="screen__expression">&nbsp;</div>
+        <div id="display" class="screen__value">0</div>
+    </section>
+
+    <section class="keypad" aria-label="calculator keypad">
+        <button class="key key--fn" data-key="clear">AC</button>
+        <button class="key key--fn" data-key="back">&larr;</button>
+        <button class="key key--op" data-key="op:/">&divide;</button>
+        <button class="key key--op" data-key="op:*">&times;</button>
+
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key key--op" data-key="op:-">&minus;</button>
+
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key key--op" data-key="op:+">+</button>
+
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key key--eq" data-key="equals">=</button>
+
+        <button class="key key--wide" data-key="0">0</button>
+        <button class="key" data-key=".">.</button>
+        <button class="key key--fn" data-key="neg">&plusmn;</button>
+    </section>
+
+    <section class="history">
+        <h2>History</h2>
+        <ol id="history" class="history__list">
+            <li class="history__empty">No calculations yet.</li>
+        </ol>
+    </section>
+
+    <footer class="foot">
+        <code>GET /api/calc?a=&hellip;&amp;op=&hellip;&amp;b=&hellip;</code> &rarr;
+        nginx proxies it to <code>http://backend:8000</code> over the Compose network.
+    </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Build context hygiene for the web image: only the three static files and the
+# nginx template are needed, everything else would just slow the build down.
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+*.log
+README.md

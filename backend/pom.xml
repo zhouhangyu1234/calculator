@@ -10,13 +10,13 @@
     <packaging>jar</packaging>
 
     <name>Calculator</name>
-    <description>Lab 4 - Unit Testing, Debugging and Static Code Analysis</description>
+    <description>Lab 3/4 calculator core + Lab 7 backend calculation API</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <junit.version>5.10.2</junit.version>
-        <jacoco.version>0.8.12</jacoco.version>
+        <jacoco.version>0.8.16</jacoco.version>
     </properties>
 
     <dependencies>

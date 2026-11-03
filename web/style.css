@@ -1,0 +1,245 @@
+/* Lab 7 frontend - static assets served by the nginx container. */
+:root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --ink: #16202b;
+    --muted: #6b7c8f;
+    --line: #dde5ee;
+    --accent: #0e7490;
+    --accent-soft: #e0f2fe;
+    --key: #f7fafc;
+    --ok: #15803d;
+    --err: #b91c1c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px 16px;
+    background: radial-gradient(circle at 20% 0%, #dbeafe 0%, var(--bg) 55%);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+}
+
+.card {
+    width: min(420px, 100%);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 18px 40px rgba(22, 32, 43, .12);
+}
+
+.card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: -.2px;
+}
+
+.subtitle {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--muted);
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    background: var(--key);
+    color: var(--muted);
+}
+
+.status__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.status--ok {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: var(--ok);
+}
+
+.status--ok .status__dot {
+    background: var(--ok);
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, .15);
+}
+
+.status--down {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: var(--err);
+}
+
+.status--down .status__dot {
+    background: var(--err);
+}
+
+.screen {
+    margin: 18px 0 14px;
+    padding: 16px;
+    border-radius: 14px;
+    background: linear-gradient(165deg, #0f172a, #1e293b);
+    color: #f8fafc;
+    text-align: right;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.screen__expression {
+    font-size: 13px;
+    color: #93a4b8;
+    min-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.screen__value {
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.screen__value--error {
+    font-size: 20px;
+    color: #fca5a5;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.key {
+    height: 50px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--key);
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease;
+}
+
+.key:hover {
+    background: #eef4fa;
+}
+
+.key:active {
+    transform: scale(.97);
+}
+
+.key--wide {
+    grid-column: span 2;
+}
+
+.key--fn {
+    color: var(--muted);
+    font-size: 15px;
+}
+
+.key--op {
+    border-color: #cffafe;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 18px;
+}
+
+.key--eq {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-size: 19px;
+}
+
+.history {
+    margin-top: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+}
+
+.history h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+}
+
+.history__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 132px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
+.history__list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--line);
+    color: var(--muted);
+}
+
+.history__list li:last-child {
+    border-bottom: 0;
+}
+
+.history__list b {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.history__empty {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.foot {
+    margin-top: 14px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--muted);
+}
+
+code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 11px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    padding: 1px 4px;
+}

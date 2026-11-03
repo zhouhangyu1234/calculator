@@ -1,0 +1,89 @@
+# ============================================================
+# Lab 7 - Multi-container orchestration for the calculator
+#   backend : Java 17 REST API on port 8000
+#   web     : nginx static UI on port 80, published as 8080
+# Start:  docker compose up -d --build
+# Stop :  docker compose down
+# ============================================================
+# Note: the top-level `version:` key is obsolete in Compose v2 and produces a
+# warning, so it is deliberately omitted.
+name: calculator-lab7
+
+services:
+
+  # ---------- Java calculation API -------------------------
+  backend:
+    # Built from the Dockerfile in ./backend - no image is pulled from a registry.
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: calculator-backend:lab7
+    container_name: calculator-backend
+
+    # Environment injection (Lab task 3, optional part). LOG_LEVEL can be
+    # overridden from the shell: LOG_LEVEL=DEBUG docker compose up
+    environment:
+      PORT: "8000"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+
+    # host:container - the API is also reachable directly for debugging.
+    ports:
+      - "8000:8000"
+
+    # Restart the container only when it fails, not on a clean stop.
+    restart: on-failure
+
+    # Business-level readiness, not just "the process started": /health only
+    # answers once the HTTP server is actually listening.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+    networks:
+      - calcnet
+
+  # ---------- nginx frontend -------------------------------
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: calculator-web:lab7
+    container_name: calculator-web
+
+    # The nginx template substitutes these into the proxy_pass directive, so
+    # the upstream is the SERVICE NAME "backend", never localhost.
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: "8000"
+
+    # host:container - the page is opened at http://127.0.0.1:8080
+    ports:
+      - "8080:80"
+
+    # The web container must not start before the API answers /health.
+    # Plain `depends_on: [backend]` would only wait for the container to start,
+    # which is not the same as waiting for the service to be ready.
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    restart: on-failure
+
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+    networks:
+      - calcnet
+
+# Explicit user-defined bridge network: every service on it can reach the
+# others by service name through Docker's embedded DNS.
+networks:
+  calcnet:
+    driver: bridge
